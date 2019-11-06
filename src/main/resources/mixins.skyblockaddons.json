@@ -17,7 +17,8 @@
     "MixinGuiInventory",
     "MixinTileEntityEnderChestRenderer",
     "MixinRendererLivingEntity",
-    "MixinGuiHopper",
-    "MixinGuiDispenser"
+    "MixinItem",
+    "MixinGuiNewChat",
+    "MixinEntityLayerCustomHead"
   ]
 }
