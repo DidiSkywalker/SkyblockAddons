@@ -2,6 +2,7 @@ package codes.biscuit.skyblockaddons.mixins;
 
 import codes.biscuit.skyblockaddons.SkyblockAddons;
 import codes.biscuit.skyblockaddons.utils.Feature;
+import codes.biscuit.skyblockaddons.utils.PotionEffectTimer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.entity.player.EntityPlayer;
@@ -11,6 +12,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.server.S2FPacketSetSlot;
 import net.minecraft.network.play.server.S30PacketWindowItems;
+import net.minecraft.network.play.server.S47PacketPlayerListHeaderFooter;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -71,6 +73,12 @@ public class MixinNetHandlerPlayClient {
                 }
             }
         }
+    }
+
+    @Inject(method = "handlePlayerListHeaderFooter", at = @At("HEAD"))
+    private void handlePlayerListHeaderFooter(S47PacketPlayerListHeaderFooter packetIn, CallbackInfo ci)
+    {
+        PotionEffectTimer.setTabFooterChatComponent(packetIn.getFooter());
     }
 
     private boolean isShootingBow(ItemStack itemStack, Minecraft mc, ItemStack currentItemStack) {

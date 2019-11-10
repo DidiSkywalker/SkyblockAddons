@@ -71,6 +71,7 @@ public enum Feature {
     ONLY_MINE_ORES_DEEP_CAVERNS(56, Message.SETTING_ONLY_MINE_ORES_DEEP_CAVERNS, true),
     SLAYER_INDICATOR(57, Message.SETTING_SLAYER_INDICATOR, new GuiFeatureData(EnumUtils.DrawType.REVENANT_PROGRESS, ConfigColor.AQUA, EnumUtils.AnchorPoint.BOTTOM_RIGHT, -84, -29), true),
     SPECIAL_ZEALOT_ALERT(58, Message.SETTING_SPECIAL_ZEALOT_ALERT, new GuiFeatureData(ConfigColor.RED), false),
+    POTION_EFFECT_TIMER(59, Message.SETTING_POTION_EFFECT_TIMERS, new GuiFeatureData(EnumUtils.DrawType.POTION_EFFECT_TIMER, EnumUtils.AnchorPoint.BOTTOM_MIDDLE, 210, -27), false),
 
     HIDE_GREY_ENCHANTS(100, null, false), // allow remote disabling this feature
 
@@ -99,7 +100,8 @@ public enum Feature {
             STOP_BOW_CHARGE_FROM_RESETTING, AVOID_PLACING_ENCHANTED_ITEMS, PREVENT_MOVEMENT_ON_DEATH, AVOID_BLINKING_NIGHT_VISION));
 
     private static Set<Feature> GUI_FEATURES = new LinkedHashSet<>(Arrays.asList(MAGMA_BOSS_TIMER, MANA_BAR, MANA_TEXT, DEFENCE_ICON, DEFENCE_TEXT,
-            DEFENCE_PERCENTAGE, HEALTH_BAR, HEALTH_TEXT, SKELETON_BAR, HEALTH_UPDATES, ITEM_PICKUP_LOG, DARK_AUCTION_TIMER, SKILL_DISPLAY, SPEED_PERCENTAGE, SLAYER_INDICATOR));
+            DEFENCE_PERCENTAGE, HEALTH_BAR, HEALTH_TEXT, SKELETON_BAR, HEALTH_UPDATES, ITEM_PICKUP_LOG, DARK_AUCTION_TIMER, SKILL_DISPLAY, SPEED_PERCENTAGE,
+            SLAYER_INDICATOR, POTION_EFFECT_TIMER));
 
     private static Set<Feature> GENERAL_FEATURES = new LinkedHashSet<>(Arrays.asList(TEXT_STYLE, WARNING_TIME));
 
@@ -165,6 +167,8 @@ public enum Feature {
                 main.getRenderListener().drawIcon(scale, mc, buttonLocation);
             } else if (guiFeatureData.getDrawType() == EnumUtils.DrawType.REVENANT_PROGRESS) {
                 main.getRenderListener().drawRevenantIndicator(scale, mc, buttonLocation);
+            } else if (guiFeatureData.getDrawType() == EnumUtils.DrawType.POTION_EFFECT_TIMER){
+                main.getRenderListener().drawPotionEffectTimers(scale, mc, buttonLocation);
             }
         }
     }
