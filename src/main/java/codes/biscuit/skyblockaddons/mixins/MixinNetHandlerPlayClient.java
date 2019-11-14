@@ -75,12 +75,6 @@ public class MixinNetHandlerPlayClient {
         }
     }
 
-    @Inject(method = "handlePlayerListHeaderFooter", at = @At("HEAD"))
-    private void handlePlayerListHeaderFooter(S47PacketPlayerListHeaderFooter packetIn, CallbackInfo ci)
-    {
-        PotionEffectTimer.setTabFooterChatComponent(packetIn.getFooter());
-    }
-
     private boolean isShootingBow(ItemStack itemStack, Minecraft mc, ItemStack currentItemStack) {
         if (itemStack != null && currentItemStack != null) {
             Item item = itemStack.getItem();

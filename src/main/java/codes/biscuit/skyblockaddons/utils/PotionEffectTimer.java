@@ -14,8 +14,6 @@ import java.util.regex.Pattern;
 public class PotionEffectTimer {
 
     /* STATIC FIELDS*/
-
-    private static IChatComponent tabFooterChatComponent;
     private static List<PotionEffectTimer> potionEffectTimers = new ArrayList<>();
     private static PotionEffectTimer[] dummyArray = new PotionEffectTimer[]{
             new PotionEffectTimer("§r§ePotion Effect II §r§f12:34§r"),
@@ -46,7 +44,8 @@ public class PotionEffectTimer {
      */
     public static void updatePotionEffects(){
         List<PotionEffectTimer> effects = new ArrayList<PotionEffectTimer>();
-
+        IChatComponent tabFooterChatComponent = Minecraft.getMinecraft().ingameGUI.getTabList().footer;
+        
         //Convert tab footer to a String
         String tabFooterString = "";
         if(tabFooterChatComponent != null){
@@ -69,15 +68,6 @@ public class PotionEffectTimer {
 
         //Store the new List of Potion Effects
         potionEffectTimers = effects;
-    }
-
-    /**
-     * Called by {@link codes.biscuit.skyblockaddons.mixins.MixinNetHandlerPlayClient}
-     * to store a received tab footer.
-     * @param footer the tab Footer
-     */
-    public static void setTabFooterChatComponent(IChatComponent footer) {
-        tabFooterChatComponent = footer;
     }
 
     /**
