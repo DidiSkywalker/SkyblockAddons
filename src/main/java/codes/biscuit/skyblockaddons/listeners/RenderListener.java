@@ -61,6 +61,7 @@ public class RenderListener {
     private PlayerListener.GUIType guiToOpen = null;
     private int guiPageToOpen = 1;
     private EnumUtils.GuiTab guiTabToOpen = EnumUtils.GuiTab.FEATURES;
+    private String textToOpen = null;
 
     public RenderListener(SkyblockAddons main) {
         this.main = main;
@@ -72,7 +73,7 @@ public class RenderListener {
     @SubscribeEvent()
     public void onRenderRegular(RenderGameOverlayEvent.Post e) {
         if ((!main.isUsingLabymod() || Minecraft.getMinecraft().ingameGUI instanceof GuiIngameForge)) {
-            if (e.type == RenderGameOverlayEvent.ElementType.EXPERIENCE) {
+            if (e.type == RenderGameOverlayEvent.ElementType.EXPERIENCE || e.type == RenderGameOverlayEvent.ElementType.JUMPBAR) {
                 if (main.getUtils().isOnSkyblock()) {
                     renderOverlays();
                     renderWarnings(e.resolution);
@@ -243,7 +244,7 @@ public class RenderListener {
     public void drawBar(Feature feature, float scale, Minecraft mc, ButtonLocation buttonLocation) {
         mc.getTextureManager().bindTexture(BARS);
 
-        if (main.getUtils().isUsingOldSkyblockPackTexture(BARS)) {
+        if (main.getUtils().isUsingOldSkyBlockTexture()) {
             mc.getTextureManager().bindTexture(IMPERIAL_BARS_FIX);
         }
 
@@ -814,6 +815,9 @@ public class RenderListener {
                 if (main.getConfigValues().isEnabled(Feature.HIDE_HEALTH_BAR)) {
                     GuiIngameForge.renderHealth = false;
                 }
+                if (main.getConfigValues().isEnabled(Feature.HIDE_PET_HEALTH_BAR)) {
+                    GuiIngameForge.renderHealthMount = false;
+                }
             } else {
                 if (main.getConfigValues().isEnabled(Feature.HIDE_HEALTH_BAR)) {
                     GuiIngameForge.renderHealth = true;
@@ -827,7 +831,12 @@ public class RenderListener {
     @SubscribeEvent()
     public void onRender(TickEvent.RenderTickEvent e) {
         if (guiToOpen == PlayerListener.GUIType.MAIN) {
-            Minecraft.getMinecraft().displayGuiScreen(new SkyblockAddonsGui(main, guiPageToOpen, guiTabToOpen));
+            if (textToOpen == null) {
+                Minecraft.getMinecraft().displayGuiScreen(new SkyblockAddonsGui(main, guiPageToOpen, guiTabToOpen));
+            } else {
+                Minecraft.getMinecraft().displayGuiScreen(new SkyblockAddonsGui(main, guiPageToOpen, guiTabToOpen, textToOpen));
+                textToOpen = null;
+            }
         } else if (guiToOpen == PlayerListener.GUIType.EDIT_LOCATIONS) {
             Minecraft.getMinecraft().displayGuiScreen(new LocationEditGui(main, guiPageToOpen, guiTabToOpen));
         }
@@ -861,8 +870,13 @@ public class RenderListener {
 
     public void setGuiToOpen(PlayerListener.GUIType guiToOpen, int page, EnumUtils.GuiTab tab) {
         this.guiToOpen = guiToOpen;
-        this.guiPageToOpen = page;
-        this.guiTabToOpen = tab;
+        guiPageToOpen = page;
+        guiTabToOpen = tab;
+    }
+
+    public void setGuiToOpen(PlayerListener.GUIType guiToOpen, int page, EnumUtils.GuiTab tab, String text) {
+        setGuiToOpen(guiToOpen,page,tab);
+        textToOpen = text;
     }
 
     public void setSubtitleFeature(Feature subtitleFeature) {
