@@ -444,7 +444,8 @@ public class EnumUtils {
         SUPERHIZE("SuperHiZe", "github.com/superhize", Feature.SPECIAL_ZEALOT_ALERT),
         DIDI_SKYWALKER("DidiSkywalker", "twitter.com/didiskywalker", Feature.ITEM_PICKUP_LOG, Feature.HEALTH_UPDATES, Feature.REPLACE_ROMAN_NUMERALS_WITH_NUMBERS, Feature.CRAFTING_PATTERNS, Feature.POWER_ORB_STATUS_DISPLAY),
         GARY("GARY_", "github.com/occanowey", Feature.ONLY_MINE_VALUABLES_NETHER),
-        P0KE("P0ke", "p0ke.dev", Feature.ZEALOT_COUNTER);
+        P0KE("P0ke", "p0ke.dev", Feature.ZEALOT_COUNTER),
+        BERISAN("Berisan", "github.com/Berisan", Feature.POTION_EFFECT_TIMER);
 
         private Set<Feature> features;
         private String author;
@@ -559,6 +560,7 @@ public class EnumUtils {
         PICKUP_LOG,
         DEFENCE_ICON,
         REVENANT_PROGRESS,
+        POTION_EFFECT_TIMER,
         POWER_ORB_DISPLAY
     }
 

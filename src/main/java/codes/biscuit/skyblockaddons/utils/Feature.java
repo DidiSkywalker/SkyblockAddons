@@ -77,9 +77,10 @@ public enum Feature {
     ENABLE_MESSAGE_WHEN_BREAKING_STEMS(61, null, false),
     ENABLE_MESSAGE_WHEN_MINING_NETHER(62, null, false),
     HIDE_PET_HEALTH_BAR(63, Message.SETTING_HIDE_PET_HEALTH_BAR, false),
-    PREVENT_CLICKING_STAINED_GLASS_PANES_MENUS(64, Message.SETTING_PREVENT_CLICKING_STAINED_GLASS_PANES_MENUS, false),
-    ZEALOT_COUNTER(65, Message.SETTING_ZEALOT_COUNTER, new GuiFeatureData(EnumUtils.DrawType.TEXT, ConfigColor.DARK_AQUA, EnumUtils.AnchorPoint.TOP_RIGHT, -50, 80), false),
-    POWER_ORB_STATUS_DISPLAY(66, Message.SETTING_POWER_ORB_DISPLAY, new GuiFeatureData(EnumUtils.DrawType.POWER_ORB_DISPLAY, null, EnumUtils.AnchorPoint.TOP_LEFT, 100, 10), false, EnumUtils.FeatureSetting.POWER_ORB_DISPLAY_STYLE),
+    POTION_EFFECT_TIMER(64, Message.SETTING_POTION_EFFECT_TIMERS, new GuiFeatureData(EnumUtils.DrawType.POTION_EFFECT_TIMER, EnumUtils.AnchorPoint.BOTTOM_MIDDLE, 210, -27), false),
+    PREVENT_CLICKING_STAINED_GLASS_PANES_MENUS(65, Message.SETTING_PREVENT_CLICKING_STAINED_GLASS_PANES_MENUS, false),
+    ZEALOT_COUNTER(66, Message.SETTING_ZEALOT_COUNTER, new GuiFeatureData(EnumUtils.DrawType.TEXT, ConfigColor.DARK_AQUA, EnumUtils.AnchorPoint.TOP_RIGHT, -50, 80), false),
+    POWER_ORB_STATUS_DISPLAY(67, Message.SETTING_POWER_ORB_DISPLAY, new GuiFeatureData(EnumUtils.DrawType.POWER_ORB_DISPLAY, null, EnumUtils.AnchorPoint.TOP_LEFT, 100, 10), false, EnumUtils.FeatureSetting.POWER_ORB_DISPLAY_STYLE),
 
     HIDE_GREY_ENCHANTS(100, null, false), // allow remote disabling this feature
 
@@ -111,7 +112,7 @@ public enum Feature {
 
     private static Set<Feature> GUI_FEATURES = new LinkedHashSet<>(Arrays.asList(MAGMA_BOSS_TIMER, MANA_BAR, MANA_TEXT, DEFENCE_ICON, DEFENCE_TEXT,
             DEFENCE_PERCENTAGE, HEALTH_BAR, HEALTH_TEXT, SKELETON_BAR, HEALTH_UPDATES, ITEM_PICKUP_LOG, DARK_AUCTION_TIMER, SKILL_DISPLAY, SPEED_PERCENTAGE, SLAYER_INDICATOR,
-            POWER_ORB_STATUS_DISPLAY, ZEALOT_COUNTER));
+            POWER_ORB_STATUS_DISPLAY, ZEALOT_COUNTER, POTION_EFFECT_TIMER));
 
     private static Set<Feature> GENERAL_FEATURES = new LinkedHashSet<>(Arrays.asList(TEXT_STYLE, WARNING_TIME));
 
@@ -183,6 +184,8 @@ public enum Feature {
                 main.getRenderListener().drawIcon(scale, mc, buttonLocation);
             } else if (guiFeatureData.getDrawType() == EnumUtils.DrawType.REVENANT_PROGRESS) {
                 main.getRenderListener().drawRevenantIndicator(scale, mc, buttonLocation);
+            } else if (guiFeatureData.getDrawType() == EnumUtils.DrawType.POTION_EFFECT_TIMER){
+                main.getRenderListener().drawPotionEffectTimers(scale, mc, buttonLocation);
             } else if(guiFeatureData.getDrawType() == EnumUtils.DrawType.POWER_ORB_DISPLAY) {
                 main.getRenderListener().drawPowerOrbStatus(mc, scale, buttonLocation);
             }
