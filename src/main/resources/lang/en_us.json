@@ -84,6 +84,7 @@
     "specialZealotAlert": "Special Zealot Alert",
     "enableMessageWhenActionPrevented": "Show a Message When an Action is Prevented",
     "hidePetHealthBar": "Hide Pet Health Bar",
+    "zealotCounter": "Show Zealot Counter",
     "powerOrbDisplay": "Power Orb Display",
     "powerOrbDisplayStyle": "Power Orb Style: %style%",
     "powerOrbStyle": {

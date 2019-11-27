@@ -1,6 +1,12 @@
 /.gradle
 /.idea
+/.settings
+/bin
 /build
 /classes
 /run
 *.iml
+.classpath
+.project
+SkyblockAddons_Client.launch
+SkyblockAddons_Server.launch
