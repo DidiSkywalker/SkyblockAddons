@@ -83,7 +83,9 @@
     "revenantIndicator": "Slayer Armor Progress Indicator",
     "specialZealotAlert": "Special Zealot Alert",
     "enableMessageWhenActionPrevented": "Show a Message When an Action is Prevented",
-    "hidePetHealthBar": "Hide Pet Health Bar"
+    "hidePetHealthBar": "Hide Pet Health Bar",
+    "combatTimer": "Display Combat Timer",
+    "showAsGuiElement": "Show as GUI Element"
   },
   "messages": {
     "dropConfirmation": "Drop this item again to confirm!",
@@ -127,6 +129,8 @@
     "specialZealotFound": "Special Zealot!",
     "blockIncompletePatterns": "Block crafting incomplete patterns (recommended)",
     "searchFeatures": "Search features",
-    "downloadingUpdateFile": "Downloading update file..."
+    "downloadingUpdateFile": "Downloading update file...",
+    "combatTimerGui": "Out of combat in %time%s",
+    "combatTimerActive": "Combat Timer is active. Double click to force warp."
   }
 }

@@ -328,6 +328,15 @@ public class SettingsGui extends GuiScreen {
             }
 
             buttonList.add(new ButtonToggleTitle(x, y, Message.SETTING_ENABLE_MESSAGE_WHEN_ACTION_PREVENTED.getMessage(), main, settingFeature));
+        } else if(setting == EnumUtils.FeatureSetting.SHOW_AS_GUI_ELEMENT) {
+            boxWidth = 31;
+            x = halfWidth-(boxWidth/2);
+            y = getRowHeightSetting(row);
+            Feature settingFeature = null;
+            if (feature == Feature.COMBAT_TIMER) {
+                settingFeature = Feature.SHOW_COMBAT_TIMER_AS_GUI_ELEMENT;
+            }
+            buttonList.add(new ButtonToggleTitle(x, y, Message.SETTING_SHOW_AS_GUI_ELEMENT.getMessage(), main, settingFeature));
         }
         row++;
     }

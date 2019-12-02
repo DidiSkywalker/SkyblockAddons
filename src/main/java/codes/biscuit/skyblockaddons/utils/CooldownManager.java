@@ -16,6 +16,10 @@ import java.util.regex.Pattern;
  */
 public class CooldownManager {
 
+    public static final String COMBAT_TIMER_ID = "combat";
+    public static final long COMBAT_TIMER_COOLDOWN = 15000L;
+    public static final long COMBAT_TIMER_SKYBLOCK_MENU_COOLDOWN = 3000L;
+
     private static final Pattern ITEM_COOLDOWN_PATTERN = Pattern.compile("§5§o§8Cooldown: §a([0-9]+)s");
     private static final Pattern ALTERNATE_COOLDOWN_PATTERN = Pattern.compile("§5§o§8([0-9]+) Second Cooldown");
 
@@ -102,7 +106,7 @@ public class CooldownManager {
      * Get the remaining cooldown of an item in milliseconds
      *
      * @param item Item to get the cooldown of
-     * @return Remaining time until its cooldown runs out or {@code 0} if it's not on cooldown
+     * @return Remaining time until its cooldown runs out in milliseconds or {@code 0} if it's not on cooldown
      */
     public static long getRemainingCooldown(ItemStack item) {
         return get(item).getRemainingCooldown();
@@ -112,7 +116,7 @@ public class CooldownManager {
      * Get the remaining cooldown of an item in milliseconds by its name
      *
      * @param itemName Displayname of the item to get the cooldown of
-     * @return Remaining time until its cooldown runs out or {@code 0} if it's not on cooldown
+     * @return Remaining time until its cooldown runs out in milliseconds or {@code 0} if it's not on cooldown
      */
     public static long getRemainingCooldown(String itemName) {
         return get(itemName).getRemainingCooldown();
@@ -136,6 +140,26 @@ public class CooldownManager {
      */
     public static double getRemainingCooldownPercent(String itemName) {
         return get(itemName).getRemainingCooldownPercent();
+    }
+
+    /**
+     * Get the elapsed time since an item was put on cooldown
+     *
+     * @param item Item to get elapsed time of
+     * @return Elapsed time in milliseconds or {@code 0} if not on cooldown
+     */
+    public static long getElapsedTime(ItemStack item) {
+        return isOnCooldown(item) ? get(item).getElapsedTime() : 0;
+    }
+
+    /**
+     * Get the elapsed time since an item was put on cooldown by item name
+     *
+     * @param itemName Item name to get elapsed time of
+     * @return Elapsed time in milliseconds or {@code 0} if not on cooldown
+     */
+    public static long getElapsedTime(String itemName) {
+        return isOnCooldown(itemName) ? get(itemName).getElapsedTime() : 0;
     }
 
     /**

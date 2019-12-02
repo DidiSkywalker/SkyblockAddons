@@ -82,6 +82,8 @@ public enum Message {
     SETTING_SPECIAL_ZEALOT_ALERT(MessageObject.SETTING, "specialZealotAlert"),
     SETTING_ONLY_MINE_VALUABLES_NETHER(MessageObject.SETTING, "onlyMineValuablesNether"),
     SETTING_HIDE_PET_HEALTH_BAR(MessageObject.SETTING, "hidePetHealthBar"),
+    SETTING_COMBAT_TIMER(MessageObject.SETTING, "combatTimer"),
+    SETTING_SHOW_AS_GUI_ELEMENT(MessageObject.SETTING, "showAsGuiElement"),
 
     BACKPACK_STYLE_REGULAR(MessageObject.STYLE, "regular"),
     BACKPACK_STYLE_COMPACT(MessageObject.STYLE, "compact"),
@@ -117,6 +119,8 @@ public enum Message {
     MESSAGE_BLOCK_INCOMPLETE_PATTERNS(MessageObject.MESSAGES, "blockIncompletePatterns"),
     MESSAGE_SEARCH_FEATURES(MessageObject.MESSAGES, "searchFeatures"),
     MESSAGE_DOWNLOADING_UPDATE(MessageObject.MESSAGES, "downloadingUpdateFile"),
+    MESSAGE_COMBAT_TIMER_GUI(MessageObject.MESSAGES, "combatTimerGui"),
+    MESSAGE_COMBAT_TIMER_ACTIVE(MessageObject.MESSAGES, "combatTimerActive"),
 
     @Deprecated ANCHOR_POINT_TOP_LEFT(MessageObject.ANCHOR_POINT, "topLeft"),
     @Deprecated ANCHOR_POINT_TOP_RIGHT(MessageObject.ANCHOR_POINT, "topRight"),
@@ -192,6 +196,8 @@ public enum Message {
                     text = text.replace("%file%", variables[0]);
                 } else if (this == Message.MESSAGE_ANVIL_USES) {
                     text = text.replace("%uses%", EnumChatFormatting.RED.toString()+variables[0]+EnumChatFormatting.GRAY.toString());
+                } else if (this == Message.MESSAGE_COMBAT_TIMER_GUI) {
+                    text = text.replace("%time%", variables[0]);
                 }
                 // else if (this == Message.SETTING_ANCHOR_POINT) { //unused at the moment.
 //                    Feature lastHovered = ButtonLocation.getLastHoveredFeature();

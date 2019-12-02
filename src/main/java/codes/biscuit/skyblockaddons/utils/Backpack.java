@@ -64,7 +64,7 @@ public class Backpack {
 
     public static Backpack getFromItem(ItemStack stack) {
         if (stack == null) return null;
-        String id = SkyblockAddons.getInstance().getInventoryUtils().getSkyBlockItemID(stack);
+        String id = InventoryUtils.getSkyBlockItemID(stack);
         if (id != null) {
             NBTTagCompound extraAttributes = stack.getTagCompound().getCompoundTag("ExtraAttributes");
             Matcher matcher = BACKPACK_ID_PATTERN.matcher(id);

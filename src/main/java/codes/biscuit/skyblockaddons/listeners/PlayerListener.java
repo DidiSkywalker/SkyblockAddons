@@ -30,6 +30,7 @@ import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.ChunkEvent;
+import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
@@ -356,6 +357,14 @@ public class PlayerListener {
         }
     }
 
+    @SubscribeEvent
+    public void onPlayerTick(TickEvent.PlayerTickEvent event) {
+        if(event.player == Minecraft.getMinecraft().thePlayer && event.player.hurtTime == 10) {
+            FMLLog.info("combat: %s, %d, lastAttacker=%s", event.player == Minecraft.getMinecraft().thePlayer, event.player.hurtTime, event.player.getLastAttacker());
+            CooldownManager.put(CooldownManager.COMBAT_TIMER_ID, CooldownManager.COMBAT_TIMER_COOLDOWN);
+        }
+    }
+
     /**
      * Checks for minion holograms.
      * Original contribution by Michael#3549.
@@ -635,6 +644,13 @@ public class PlayerListener {
                         e.toolTip.add(enchantStartIndex + i, sb.toString());
                     }
                 }
+            }
+
+            if(main.getConfigValues().isEnabled(Feature.COMBAT_TIMER)
+                    && hoveredItem.hasDisplayName()
+                    && hoveredItem.getDisplayName().startsWith("§bWarp to")
+                    && CooldownManager.isOnCooldown(CooldownManager.COMBAT_TIMER_ID)) {
+                e.toolTip.set(e.toolTip.size() - 1, "§c"+Message.MESSAGE_COMBAT_TIMER_ACTIVE.getMessage());
             }
         }
     }

@@ -31,6 +31,8 @@ public class InventoryUtils {
      */
     private static final String SKELETON_HELMET_ID = "SKELETON_HELMET";
 
+    public static final String SKYBLOCK_MENU_ID = "SKYBLOCK_MENU";
+
     public static final String MADDOX_BATPHONE_DISPLAYNAME = "\u00A7aMaddox Batphone";
     public static final String JUNGLE_AXE_DISPLAYNAME = "\u00A7aJungle Axe";
 
@@ -257,7 +259,7 @@ public class InventoryUtils {
         else return 0;
     }
 
-    String getSkyBlockItemID(final ItemStack item) {
+    public static String getSkyBlockItemID(final ItemStack item) {
         if (item == null) return null;
         if (item.hasTagCompound()) {
             NBTTagCompound skyBlockData = item.getTagCompound().getCompoundTag("ExtraAttributes");

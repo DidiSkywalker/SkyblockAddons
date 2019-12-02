@@ -77,6 +77,8 @@ public enum Feature {
     ENABLE_MESSAGE_WHEN_BREAKING_STEMS(61, null, false),
     ENABLE_MESSAGE_WHEN_MINING_NETHER(62, null, false),
     HIDE_PET_HEALTH_BAR(63, Message.SETTING_HIDE_PET_HEALTH_BAR, false),
+    COMBAT_TIMER(64, Message.SETTING_COMBAT_TIMER, new GuiFeatureData(EnumUtils.DrawType.TEXT, ConfigColor.RED, EnumUtils.AnchorPoint.BOTTOM_RIGHT, -84, -29), false, EnumUtils.FeatureSetting.SHOW_AS_GUI_ELEMENT),
+    SHOW_COMBAT_TIMER_AS_GUI_ELEMENT(64, null, true),
 
     HIDE_GREY_ENCHANTS(100, null, false), // allow remote disabling this feature
 
@@ -107,7 +109,8 @@ public enum Feature {
             HIDE_PET_HEALTH_BAR));
 
     private static Set<Feature> GUI_FEATURES = new LinkedHashSet<>(Arrays.asList(MAGMA_BOSS_TIMER, MANA_BAR, MANA_TEXT, DEFENCE_ICON, DEFENCE_TEXT,
-            DEFENCE_PERCENTAGE, HEALTH_BAR, HEALTH_TEXT, SKELETON_BAR, HEALTH_UPDATES, ITEM_PICKUP_LOG, DARK_AUCTION_TIMER, SKILL_DISPLAY, SPEED_PERCENTAGE, SLAYER_INDICATOR));
+            DEFENCE_PERCENTAGE, HEALTH_BAR, HEALTH_TEXT, SKELETON_BAR, HEALTH_UPDATES, ITEM_PICKUP_LOG, DARK_AUCTION_TIMER, SKILL_DISPLAY,
+            SPEED_PERCENTAGE, SLAYER_INDICATOR, COMBAT_TIMER));
 
     private static Set<Feature> GENERAL_FEATURES = new LinkedHashSet<>(Arrays.asList(TEXT_STYLE, WARNING_TIME));
 

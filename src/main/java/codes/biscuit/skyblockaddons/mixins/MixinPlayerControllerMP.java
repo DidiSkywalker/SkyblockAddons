@@ -35,6 +35,12 @@ public class MixinPlayerControllerMP {
     private static final int SHIFTCLICK_CLICK_TYPE = 1;
 
     /**
+     * Time in which to count double clicks on a warp skull inside the Skyblock Menu to force warp while
+     * the combat timer is active
+     */
+    private static final long FORCE_WARP_DOUBLE_CLICK_TIME = 1000;
+
+    /**
      * Cooldown between playing error sounds to avoid stacking up
      */
     private static int CRAFTING_PATTERN_SOUND_COOLDOWN = 400;
@@ -50,6 +56,7 @@ public class MixinPlayerControllerMP {
 
     private long lastStemMessage = -1;
     private long lastUnmineableMessage = -1;
+    private long lastWarpClick = 0;
 
     /**
      * Cancels stem breaks if holding an item, to avoid accidental breaking.
@@ -126,7 +133,6 @@ public class MixinPlayerControllerMP {
                 cir.cancel();
             }
 
-            // Crafting patterns
             final Container slots = player.openContainer;
 
             Slot slotIn;
@@ -136,6 +142,21 @@ public class MixinPlayerControllerMP {
                 slotIn = null;
             }
 
+            // Combat timer
+            if(main.getConfigValues().isEnabled(Feature.COMBAT_TIMER)
+                    && slotIn != null
+                    && slotIn.getHasStack()
+                    && slotIn.getStack().hasDisplayName()
+                    && slotIn.getStack().getDisplayName().startsWith("§bWarp to")
+                    && CooldownManager.isOnCooldown(CooldownManager.COMBAT_TIMER_ID)
+                    && lastWarpClick + FORCE_WARP_DOUBLE_CLICK_TIME < System.currentTimeMillis()) {
+                lastWarpClick = System.currentTimeMillis();
+                cir.setReturnValue(null);
+                cir.cancel();
+                return;
+            }
+
+            // Crafting patterns
             if(slotIn != null && EnumUtils.InventoryType.getCurrentInventoryType() == EnumUtils.InventoryType.CRAFTING_TABLE
                     && main.getConfigValues().isEnabled(Feature.CRAFTING_PATTERNS)) {
 

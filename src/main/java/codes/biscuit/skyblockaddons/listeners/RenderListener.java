@@ -28,8 +28,8 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.awt.*;
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 import static net.minecraft.client.gui.Gui.icons;
 
@@ -590,6 +590,17 @@ public class RenderListener {
                     textAlpha = (float) 1 - ((float) -remainingTime / 2000);
                     color = main.getConfigValues().getColor(feature).getColor(textAlpha * 255 >= 4 ? textAlpha * 255 : 4); // so it fades out, 0.016 is the minimum alpha
                 }
+            }
+        } else if (feature == Feature.COMBAT_TIMER) {
+            if(buttonLocation != null) {
+                text = Message.MESSAGE_COMBAT_TIMER_GUI.getMessage(String.valueOf(10));
+            } else {
+                if(main.getConfigValues().isDisabled(Feature.SHOW_COMBAT_TIMER_AS_GUI_ELEMENT)
+                        || !CooldownManager.isOnCooldown(CooldownManager.COMBAT_TIMER_ID)) {
+                    return;
+                }
+
+                text = Message.MESSAGE_COMBAT_TIMER_GUI.getMessage(String.valueOf((CooldownManager.getRemainingCooldown(CooldownManager.COMBAT_TIMER_ID) / 1000) + 1));
             }
         } else {
             return;

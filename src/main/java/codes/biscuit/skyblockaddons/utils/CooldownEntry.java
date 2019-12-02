@@ -43,6 +43,15 @@ public class CooldownEntry {
     }
 
     /**
+     * Get the elapsed time since last use
+     *
+     * @return Milliseconds since last use
+     */
+    long getElapsedTime() {
+        return System.currentTimeMillis() - lastUse;
+    }
+
+    /**
      * Get the remaining cooldown as a Percentage of the remaining time to the base cooldown
      *
      * @return Percentage between {@code 0 to 1} or {@code 0} if not on cooldown
