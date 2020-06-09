@@ -110,6 +110,7 @@ public enum Message {
     SETTING_COMBAT_TIMER_DISPLAY(MessageObject.SETTING, "combatTimerDisplay"),
     SETTING_DISCORD_RP(MessageObject.SETTING, "discordRP"),
     SETTING_ENDSTONE_PROTECTOR_DISPLAY(MessageObject.SETTING, "endstoneProtectorDisplay"),
+    SETTING_PET_DISPLAY(MessageObject.SETTING, "petDisplay"),
 
     BACKPACK_STYLE_REGULAR(MessageObject.BACKPACK_STYLE, "regular"),
     BACKPACK_STYLE_COMPACT(MessageObject.BACKPACK_STYLE, "compact"),

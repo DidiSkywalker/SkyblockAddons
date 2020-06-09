@@ -1,5 +1,6 @@
 package codes.biscuit.skyblockaddons;
 
+import codes.biscuit.skyblockaddons.api.SkyblockAPI;
 import codes.biscuit.skyblockaddons.commands.SkyblockAddonsCommand;
 import codes.biscuit.skyblockaddons.listeners.GuiScreenListener;
 import codes.biscuit.skyblockaddons.listeners.NetworkListener;
@@ -16,6 +17,7 @@ import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
+import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.ModContainer;
@@ -27,6 +29,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -126,6 +129,7 @@ public class SkyblockAddons {
         utils.getFeaturedURLOnline();
         updater.processUpdateCheckResult();
         scheduleMagmaCheck();
+        startApiUpdates(0);
 
         for (Feature feature : Feature.values()) {
             if (feature.isGuiFeature()) {
@@ -172,6 +176,22 @@ public class SkyblockAddons {
                 }
             }
         }, 5000);
+    }
+
+    private void startApiUpdates(int delay) {
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    FMLLog.info("Running API update");
+                    SkyblockAPI.update();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    FMLLog.severe("Failed to update API: %s", e.getMessage());
+                    startApiUpdates(20000);
+                }
+            }
+        }, delay);
     }
 
     public KeyBinding getOpenSettingsKey() {

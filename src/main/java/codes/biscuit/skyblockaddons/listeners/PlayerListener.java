@@ -1,6 +1,8 @@
 package codes.biscuit.skyblockaddons.listeners;
 
 import codes.biscuit.skyblockaddons.SkyblockAddons;
+import codes.biscuit.skyblockaddons.api.SkyblockAPI;
+import codes.biscuit.skyblockaddons.api.models.Pet;
 import codes.biscuit.skyblockaddons.utils.*;
 import codes.biscuit.skyblockaddons.utils.dev.DevUtils;
 import codes.biscuit.skyblockaddons.utils.item.ItemUtils;
@@ -42,6 +44,7 @@ import net.minecraftforge.event.entity.player.FillBucketEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.ChunkEvent;
+import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
@@ -51,6 +54,7 @@ import org.lwjgl.input.Keyboard;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class PlayerListener {
 
@@ -58,6 +62,7 @@ public class PlayerListener {
     private final static Pattern ABILITY_CHAT_PATTERN = Pattern.compile("§r§aUsed §r§6[A-Za-z ]+§r§a! §r§b\\([0-9]+ Mana\\)§r");
     private final static Pattern PROFILE_CHAT_PATTERN = Pattern.compile("§aYou are playing on profile: §e([A-Za-z]+).*");
     private final static Pattern SWITCH_PROFILE_CHAT_PATTERN = Pattern.compile("§aYour profile was changed to: §e([A-Za-z]+).*");
+    private final static Pattern PET_PATTERN = Pattern.compile("§r§([a-f0-9])(.+)§r.+");
 //    private final static Pattern COLLECTIONS_CHAT_PATTERN = Pattern.compile("§.\\+(?:§[0-9a-f])?([0-9.]+) §?[0-9a-f]?([A-Za-z]+) (\\([0-9.,]+/[0-9.,]+\\))");
     private final static Set<String> SOUP_RANDOM_MESSAGES = new HashSet<>(Arrays.asList("I feel like I can fly!", "What was in that soup?",
             "Hmm… tasty!", "Hmm... tasty!", "You can now fly for 2 minutes.", "Your Magical Mushroom Soup flight has been extended for 2 extra minutes."));
@@ -192,6 +197,30 @@ public class PlayerListener {
                 } else {
                     this.rainmakerTimeEnd += (1000*60); // Extend the timer one minute.
                 }
+            } else if(unformattedText.startsWith("You summoned your")) {
+                String petName = formattedText.substring(26, formattedText.length()-7);
+                char color = formattedText.charAt(25);
+                FMLLog.info("Pet summoned color=%s petName=%s", color, petName);
+                List<Pet> possiblePets = SkyblockAPI.getActiveProfile().getLocalMember().getPets().stream()
+                        .filter(pet -> {
+                            if(pet.getType() != null) {
+                                return pet.getRarity().getColor() == color && pet.getType().getFriendlyName().equals(petName);
+                            }
+                            return false;
+                        })
+                        .collect(Collectors.toList());
+                FMLLog.info("Possible Pets=%s", possiblePets);
+                if(possiblePets.isEmpty()) {
+                    main.getUtils().sendMessage("Couldn't find the new pet.", true);
+                    SkyblockAPI.getActiveProfile().getLocalMember().setActivePet(null);
+                } else {
+                    if(possiblePets.size() > 1) {
+                        main.getUtils().sendMessage("Found multiple possible pets. Please go to the Pet Menu and click 'Refresh Pet'", true);
+                    }
+                    SkyblockAPI.getActiveProfile().getLocalMember().setActivePet(possiblePets.get(0));
+                }
+            } else if(unformattedText.startsWith("You despawned your")) {
+                SkyblockAPI.getActiveProfile().getLocalMember().setActivePet(null);
             }
 
             if (main.getConfigValues().isEnabled(Feature.NO_ARROWS_LEFT_ALERT)) {

@@ -859,4 +859,8 @@ public class Utils {
     public int getColorWithAlpha(int color, int alpha) {
         return color + ((alpha << 24) & 0xFF000000);
     }
+
+    public void setProfileName(String profileName) {
+        this.profileName = profileName;
+    }
 }

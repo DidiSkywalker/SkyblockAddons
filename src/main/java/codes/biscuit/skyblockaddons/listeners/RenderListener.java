@@ -1,6 +1,9 @@
 package codes.biscuit.skyblockaddons.listeners;
 
 import codes.biscuit.skyblockaddons.SkyblockAddons;
+import codes.biscuit.skyblockaddons.api.SkyblockAPI;
+import codes.biscuit.skyblockaddons.api.models.Pet;
+import codes.biscuit.skyblockaddons.constants.game.Rarity;
 import codes.biscuit.skyblockaddons.gui.LocationEditGui;
 import codes.biscuit.skyblockaddons.gui.SettingsGui;
 import codes.biscuit.skyblockaddons.gui.SkyblockAddonsGui;
@@ -34,6 +37,8 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.awt.*;
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.List;
 import java.util.*;
 
@@ -765,6 +770,30 @@ public class RenderListener {
 
             int stageNum = Math.min(stage.ordinal(), 5);
             text = Message.MESSAGE_STAGE.getMessage(String.valueOf(stageNum));
+        } else if(feature == Feature.PET_DISPLAY) {
+            if(SkyblockAPI.getActiveProfile() == null) {
+                text = "§cAPI Error";
+            } else {
+                Pet pet = SkyblockAPI.getActiveProfile().getLocalMember().getActivePet();
+                if(buttonLocation != null && pet == null) {
+                    pet = new Pet(Pet.Type.BEE.name(), 103621, Rarity.EPIC, null, true);
+                }
+                if(pet != null) {
+                    Pet.ExpProgress exp = pet.getExpProgress();
+                    // Use english locale, because to match how numbers are displayed in standard SkyBlock
+                    DecimalFormat decimalFormat = (DecimalFormat) NumberFormat.getNumberInstance(Locale.ENGLISH);
+                    decimalFormat.applyPattern("###,###.##");
+                    text = String.format("§%sLv%d §e%s%%",
+                            pet.getRarity().getColor(),
+                            exp.getLevel(),
+//                        pet.getName(),
+//                        decimalFormat.format(exp.getXpCurrent()),
+//                        decimalFormat.format(exp.getXpForNext()),
+                            decimalFormat.format(exp.getProgress()));
+                } else {
+                    return;
+                }
+            }
         } else {
             return;
         }
@@ -910,6 +939,17 @@ public class RenderListener {
             ChromaManager.renderingText(feature);
             main.getUtils().drawTextWithStyle("< " + count, intX+16+2, intY, color, textAlpha);
             ChromaManager.doneRenderingText();
+        } else if(feature == Feature.PET_DISPLAY) {
+            if(SkyblockAPI.getActiveProfile() != null) {
+                Pet pet = SkyblockAPI.getActiveProfile().getLocalMember().getActivePet();
+                if (buttonLocation != null && pet == null) {
+                    pet = new Pet(Pet.Type.BEE.name(), 103621, Rarity.EPIC, null, true);
+                }
+                if (pet != null) {
+                    mc.getTextureManager().bindTexture(pet.getType().getIcon());
+                    Gui.drawModalRectWithCustomSizedTexture(intX - 18, intY - 5, 0, 0, 16, 16, 16, 16);
+                }
+            }
         }
     }
 
