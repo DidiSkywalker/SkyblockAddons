@@ -1,6 +1,8 @@
 package codes.biscuit.skyblockaddons.utils;
 
 import codes.biscuit.skyblockaddons.SkyblockAddons;
+import codes.biscuit.skyblockaddons.core.Attribute;
+import codes.biscuit.skyblockaddons.core.Feature;
 import codes.biscuit.skyblockaddons.api.SkyblockAPI;
 import codes.biscuit.skyblockaddons.utils.nifty.StringUtil;
 import lombok.Getter;
@@ -91,7 +93,6 @@ public class ActionBarParser {
                     unusedSections.add(sectionReturn);
                 }
             } catch(Exception ex) {
-                ex.printStackTrace();
                 unusedSections.add(section);
             }
         }

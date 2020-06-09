@@ -1,6 +1,11 @@
 package codes.biscuit.skyblockaddons.listeners;
 
 import codes.biscuit.skyblockaddons.SkyblockAddons;
+import codes.biscuit.skyblockaddons.core.Attribute;
+import codes.biscuit.skyblockaddons.core.Feature;
+import codes.biscuit.skyblockaddons.core.Location;
+import codes.biscuit.skyblockaddons.core.Message;
+import codes.biscuit.skyblockaddons.gui.IslandWarpGui;
 import codes.biscuit.skyblockaddons.api.SkyblockAPI;
 import codes.biscuit.skyblockaddons.api.models.Pet;
 import codes.biscuit.skyblockaddons.utils.*;
@@ -52,22 +57,23 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.lwjgl.input.Keyboard;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class PlayerListener {
 
+    private static final Pattern NO_ARROWS_LEFT_PATTERN = Pattern.compile("(?:§r)?§cYou don't have any more Arrows left in your Quiver!§r");
+    private static final Pattern ONLY_HAVE_ARROWS_LEFT_PATTERN = Pattern.compile("(?:§r)?§cYou only have (?<arrows>[0-9]+) Arrows left in your Quiver!§r");
     private final static Pattern ENCHANTMENT_TOOLTIP_PATTERN = Pattern.compile("§.§.(§9[\\w ]+(, )?)+");
     private final static Pattern ABILITY_CHAT_PATTERN = Pattern.compile("§r§aUsed §r§6[A-Za-z ]+§r§a! §r§b\\([0-9]+ Mana\\)§r");
     private final static Pattern PROFILE_CHAT_PATTERN = Pattern.compile("§aYou are playing on profile: §e([A-Za-z]+).*");
     private final static Pattern SWITCH_PROFILE_CHAT_PATTERN = Pattern.compile("§aYour profile was changed to: §e([A-Za-z]+).*");
+    private final static Pattern MINION_CANT_REACH_PATTERN = Pattern.compile("§cI can't reach any (?<mobName>[A-Za-z]*)(?:s)");
     private final static Pattern PET_PATTERN = Pattern.compile("§r§([a-f0-9])(.+)§r.+");
-//    private final static Pattern COLLECTIONS_CHAT_PATTERN = Pattern.compile("§.\\+(?:§[0-9a-f])?([0-9.]+) §?[0-9a-f]?([A-Za-z]+) (\\([0-9.,]+/[0-9.,]+\\))");
     private final static Set<String> SOUP_RANDOM_MESSAGES = new HashSet<>(Arrays.asList("I feel like I can fly!", "What was in that soup?",
             "Hmm… tasty!", "Hmm... tasty!", "You can now fly for 2 minutes.", "Your Magical Mushroom Soup flight has been extended for 2 extra minutes."));
-
-    @Deprecated private boolean sentUpdate = false;
 
     private long lastWorldJoin = -1;
     private long lastBoss = -1;
@@ -120,6 +126,12 @@ public class PlayerListener {
             recentlyLoadedChunks.clear();
             countedEndermen.clear();
             EndstoneProtectorManager.reset();
+
+            IslandWarpGui.Marker doubleWarpMarker = IslandWarpGui.getDoubleWarpMarker();
+            if (doubleWarpMarker != null) {
+                IslandWarpGui.setDoubleWarpMarker(null);
+                Minecraft.getMinecraft().thePlayer.sendChatMessage("/warp "+doubleWarpMarker.getWarpName());
+            }
         }
     }
 
@@ -179,7 +191,7 @@ public class PlayerListener {
                 }
                 if (main.getConfigValues().isEnabled(Feature.ZEALOT_COUNTER)) {
                     // Edit the message to include counter.
-                    e.message = new ChatComponentText(e.message.getFormattedText() + ChatFormatting.GRAY + " (" + main.getPersistentValues().getKills() + ")");
+                    e.message = new ChatComponentText(formattedText + ChatFormatting.GRAY + " (" + main.getPersistentValues().getKills() + ")");
                 }
                 main.getPersistentValues().addEyeResetKills();
 
@@ -224,28 +236,31 @@ public class PlayerListener {
             }
 
             if (main.getConfigValues().isEnabled(Feature.NO_ARROWS_LEFT_ALERT)) {
-                if (formattedText.equals("§r§cYou don't have any more Arrows left in your Quiver!§r")) {
+                Matcher matcher;
+                if (NO_ARROWS_LEFT_PATTERN.matcher(formattedText).matches()) {
                     main.getUtils().playLoudSound("random.orb", 0.5);
                     main.getRenderListener().setSubtitleFeature(Feature.NO_ARROWS_LEFT_ALERT);
+                    main.getRenderListener().setArrowsLeft(-1); // TODO: check, does this break anything?
                     main.getScheduler().schedule(Scheduler.CommandType.RESET_SUBTITLE_FEATURE, main.getConfigValues().getWarningSeconds());
-                } else if (formattedText.startsWith("§r§cYou only have") && formattedText.endsWith("Arrows left in your Quiver!§r")) {
-                    int arrowsLeft = Integer.parseInt(TextUtils.getNumbersOnly(formattedText).trim());
+
+                } else if ((matcher = ONLY_HAVE_ARROWS_LEFT_PATTERN.matcher(formattedText)).matches()) {
+                    int arrowsLeft = Integer.parseInt(matcher.group("arrows"));
                     main.getUtils().playLoudSound("random.orb", 0.5);
                     main.getRenderListener().setSubtitleFeature(Feature.NO_ARROWS_LEFT_ALERT);
-                    main.getRenderListener().setArrowsLeft(arrowsLeft);// THIS IS IMPORTANT
+                    main.getRenderListener().setArrowsLeft(arrowsLeft);
                     main.getScheduler().schedule(Scheduler.CommandType.RESET_SUBTITLE_FEATURE, main.getConfigValues().getWarningSeconds());
                 }
             }
 
-            Matcher matcher = ABILITY_CHAT_PATTERN.matcher(e.message.getFormattedText());
+            Matcher matcher = ABILITY_CHAT_PATTERN.matcher(formattedText);
             if (matcher.matches()) {
                 CooldownManager.put(Minecraft.getMinecraft().thePlayer.getHeldItem());
             } else {
-                matcher = PROFILE_CHAT_PATTERN.matcher(e.message.getFormattedText());
+                matcher = PROFILE_CHAT_PATTERN.matcher(formattedText);
                 if (matcher.matches()) {
                     main.getUtils().setProfileName(matcher.group(1));
                 } else {
-                    matcher = SWITCH_PROFILE_CHAT_PATTERN.matcher(e.message.getFormattedText());
+                    matcher = SWITCH_PROFILE_CHAT_PATTERN.matcher(formattedText);
                     if (matcher.matches()) {
                         main.getUtils().setProfileName(matcher.group(1));
                     }
@@ -276,6 +291,13 @@ public class PlayerListener {
         ItemStack heldItem = e.entityPlayer.getHeldItem();
 
         if (main.getUtils().isOnSkyblock() && e.entityPlayer == mc.thePlayer && heldItem != null) {
+            if (heldItem.getItem() == Items.skull) {
+                Backpack backpack = BackpackManager.getFromItem(heldItem);
+                if (backpack != null) {
+                    BackpackManager.setOpenedBackpackColor(backpack.getBackpackColor());
+                }
+            }
+
             // Update fishing status
             if (heldItem.getItem().equals(Items.fishing_rod)
                     && (e.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK || e.action == PlayerInteractEvent.Action.RIGHT_CLICK_AIR)) {
@@ -357,7 +379,7 @@ public class PlayerListener {
                 } else if (timerTick % 5 == 0) { // Check inventory, location, updates, and skeleton helmet every 1/4 second.
                     EntityPlayerSP p = mc.thePlayer;
                     if (p != null) {
-                        EndstoneProtectorManager.tick();
+                        EndstoneProtectorManager.checkGolemStatus();
                         main.getUtils().checkGameLocationDate();
                         main.getInventoryUtils().checkIfInventoryIsFull(mc, p);
 
@@ -366,11 +388,6 @@ public class PlayerListener {
                             main.getInventoryUtils().checkIfUsingToxicArrowPoison(p);
                             main.getInventoryUtils().checkIfWearingSlayerArmor(p);
                         }
-
-/*                        if (!sentUpdate) {
-                            main.getUtils().checkUpdates();
-                            sentUpdate = true;
-                        }*/
 
                         if (mc.currentScreen == null && main.getConfigValues().isEnabled(Feature.ITEM_PICKUP_LOG)
                                 && main.getPlayerListener().didntRecentlyJoinWorld()) {
@@ -396,48 +413,33 @@ public class PlayerListener {
         Entity entity = e.entity;
 
         if (main.getUtils().isOnSkyblock() && entity instanceof EntityArmorStand && entity.hasCustomName()) {
-            String customNameTag = entity.getCustomNameTag();
 
-            PowerOrb powerOrb = PowerOrb.getByDisplayname(customNameTag);
-            if (powerOrb != null
-                    && Minecraft.getMinecraft().thePlayer != null
-                    && powerOrb.isInRadius(entity.getPosition().distanceSq(Minecraft.getMinecraft().thePlayer.getPosition()))) {
-                String[] customNameTagSplit = customNameTag.split(" ");
-                String secondsString = customNameTagSplit[customNameTagSplit.length - 1]
-                        .replaceAll("§e", "")
-                        .replaceAll("s", "");
-                try {
-                    // Apparently they don't have a second count for moment after spawning, that's what this try-catch is for
-                    int seconds = Integer.parseInt(secondsString);
-                    PowerOrbManager.getInstance().put(powerOrb, seconds);
-                } catch (NumberFormatException ignored) {
-                }
-            }
+            PowerOrbManager.getInstance().detectPowerOrb(entity);
 
             if (main.getUtils().getLocation() == Location.ISLAND) {
                 int cooldown = main.getConfigValues().getWarningSeconds() * 1000 + 5000;
                 if (main.getConfigValues().isEnabled(Feature.MINION_FULL_WARNING) &&
                         entity.getCustomNameTag().equals("§cMy storage is full! :(")) {
                     long now = System.currentTimeMillis();
-                    if (now - lastMinionSound > cooldown) { //this just spams message...
+                    if (now - lastMinionSound > cooldown) {
                         lastMinionSound = now;
                         main.getUtils().playLoudSound("random.pop", 1);
                         main.getRenderListener().setSubtitleFeature(Feature.MINION_FULL_WARNING);
                         main.getScheduler().schedule(Scheduler.CommandType.RESET_SUBTITLE_FEATURE, main.getConfigValues().getWarningSeconds());
                     }
-                } else if (main.getConfigValues().isEnabled(Feature.MINION_STOP_WARNING) &&
-                        entity.getCustomNameTag().startsWith("§cI can't reach any ")) {
-                    long now = System.currentTimeMillis();
-                    if (now - lastMinionSound > cooldown) {
-                        lastMinionSound = now;
-                        main.getUtils().playLoudSound("random.orb", 1);
-                        String mobName = entity.getCustomNameTag().split(Pattern.quote("§cI can't reach any "))[1].toLowerCase();
-                        if (mobName.lastIndexOf("s") == mobName.length() - 1) {
-                            mobName = mobName.substring(0, mobName.length() - 1);
+                } else if (main.getConfigValues().isEnabled(Feature.MINION_STOP_WARNING)) { // TODO Make sure this works...
+                    Matcher matcher = MINION_CANT_REACH_PATTERN.matcher(entity.getCustomNameTag());
+                    if (matcher.matches()) {
+                        long now = System.currentTimeMillis();
+                        if (now - lastMinionSound > cooldown) {
+                            lastMinionSound = now;
+                            main.getUtils().playLoudSound("random.orb", 1);
+
+                            String mobName = matcher.group("mobName");
+                            main.getRenderListener().setCannotReachMobName(mobName);
+                            main.getRenderListener().setSubtitleFeature(Feature.MINION_STOP_WARNING);
+                            main.getScheduler().schedule(Scheduler.CommandType.RESET_SUBTITLE_FEATURE, main.getConfigValues().getWarningSeconds());
                         }
-                        main.getRenderListener().setCannotReachMobName(mobName);
-                        main.getRenderListener().setSubtitleFeature(Feature.MINION_STOP_WARNING);
-                        main.getScheduler().schedule(Scheduler.CommandType.RESET_SUBTITLE_FEATURE, main.getConfigValues().getWarningSeconds());
                     }
                 }
             }
@@ -458,13 +460,10 @@ public class PlayerListener {
         if (e.entity instanceof EntityEnderman) {
             if (countedEndermen.remove(e.entity.getUniqueID())) {
                 main.getPersistentValues().addKill();
-            }
-            if (isZealot(e.entity)) {
                 EndstoneProtectorManager.onKill();
             }
         }
     }
-
     private boolean isZealot(Entity enderman) {
         List<EntityArmorStand> stands = Minecraft.getMinecraft().theWorld.getEntitiesWithinAABB(EntityArmorStand.class,
                 new AxisAlignedBB(enderman.posX - 1, enderman.posY, enderman.posZ - 1, enderman.posX + 1, enderman.posY + 5, enderman.posZ + 1));
@@ -501,7 +500,7 @@ public class PlayerListener {
                                     magmaAccuracy = EnumUtils.MagmaTimerAccuracy.SPAWNED;
                                     if (currentTime - lastBossSpawnPost > 300000) {
                                         lastBossSpawnPost = currentTime;
-                                        main.getUtils().sendPostRequest(EnumUtils.MagmaEvent.BOSS_SPAWN);
+                                        main.getUtils().sendInventiveTalentPingRequest(EnumUtils.MagmaEvent.BOSS_SPAWN);
                                     }
                                 }
                             }
@@ -514,7 +513,7 @@ public class PlayerListener {
                             magmaTime = 7200;
                             if (currentTime - lastBossDeathPost > 300000) {
                                 lastBossDeathPost = currentTime;
-                                main.getUtils().sendPostRequest(EnumUtils.MagmaEvent.BOSS_DEATH);
+                                main.getUtils().sendInventiveTalentPingRequest(EnumUtils.MagmaEvent.BOSS_DEATH);
                             }
                         }
                     }
@@ -555,7 +554,7 @@ public class PlayerListener {
                             magmaAccuracy = EnumUtils.MagmaTimerAccuracy.EXACTLY;
                             if (currentTime - lastMagmaWavePost > 300000) {
                                 lastMagmaWavePost = currentTime;
-                                main.getUtils().sendPostRequest(EnumUtils.MagmaEvent.MAGMA_WAVE);
+                                main.getUtils().sendInventiveTalentPingRequest(EnumUtils.MagmaEvent.MAGMA_WAVE);
                             }
                         }
                     }
@@ -568,7 +567,7 @@ public class PlayerListener {
                             magmaAccuracy = EnumUtils.MagmaTimerAccuracy.EXACTLY;
                             if (currentTime - lastBlazeWavePost > 300000) {
                                 lastBlazeWavePost = currentTime;
-                                main.getUtils().sendPostRequest(EnumUtils.MagmaEvent.BLAZE_WAVE);
+                                main.getUtils().sendInventiveTalentPingRequest(EnumUtils.MagmaEvent.BLAZE_WAVE);
                             }
                         }
                     }
@@ -585,7 +584,7 @@ public class PlayerListener {
         ItemStack hoveredItem = e.itemStack;
 
         if (e.toolTip != null && main.getUtils().isOnSkyblock()) {
-            if (!main.getConfigValues().isRemoteDisabled(Feature.HIDE_GREY_ENCHANTS)) {
+            if (main.getConfigValues().isEnabled(Feature.HIDE_GREY_ENCHANTS)) {
                 for (int i = 1; i <= 3; i++) { // only a max of 2 gray enchants are possible
                     if (i >= e.toolTip.size()) continue; // out of bounds
 
@@ -717,7 +716,11 @@ public class PlayerListener {
                 IInventory chestInventory = ((GuiChest)e.gui).lowerChestInventory;
                 if (chestInventory.hasCustomName()) {
                     if (chestInventory.getDisplayName().getUnformattedText().contains("Backpack")) {
-                        mc.thePlayer.playSound("mob.horse.armor", 0.5F, 1);
+                        if (ThreadLocalRandom.current().nextInt(0, 2) == 0) {
+                            mc.thePlayer.playSound("mob.horse.armor", 0.5F, 1);
+                        } else {
+                            mc.thePlayer.playSound("mob.horse.leather", 0.5F, 1);
+                        }
                     }
                 }
             }

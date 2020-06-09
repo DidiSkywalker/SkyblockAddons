@@ -2,8 +2,8 @@ package codes.biscuit.skyblockaddons.asm.hooks;
 
 import codes.biscuit.skyblockaddons.SkyblockAddons;
 import codes.biscuit.skyblockaddons.asm.utils.ReturnValue;
-import codes.biscuit.skyblockaddons.utils.Feature;
-import codes.biscuit.skyblockaddons.utils.Message;
+import codes.biscuit.skyblockaddons.core.Feature;
+import codes.biscuit.skyblockaddons.core.Message;
 import codes.biscuit.skyblockaddons.utils.npc.NPCUtils;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
@@ -109,7 +109,7 @@ public class MinecraftHook {
             }
 
             ItemStack heldItemStack = mc.thePlayer.getHeldItem();
-            if (heldItemStack != null && main.getConfigValues().isEnabled(Feature.STOP_DROPPING_SELLING_RARE_ITEMS)
+            if (heldItemStack != null && main.getConfigValues().isEnabled(Feature.STOP_DROPPING_SELLING_RARE_ITEMS) && !main.getUtils().isInDungeon()
                     && !main.getUtils().getItemDropChecker().canDropItem(heldItemStack, true, false)) {
 
                 MinecraftHook.lastLockedSlotItemChange = System.currentTimeMillis();

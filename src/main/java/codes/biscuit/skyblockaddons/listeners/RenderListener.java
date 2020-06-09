@@ -1,6 +1,11 @@
 package codes.biscuit.skyblockaddons.listeners;
 
 import codes.biscuit.skyblockaddons.SkyblockAddons;
+import codes.biscuit.skyblockaddons.core.Attribute;
+import codes.biscuit.skyblockaddons.core.Feature;
+import codes.biscuit.skyblockaddons.core.Location;
+import codes.biscuit.skyblockaddons.core.Message;
+import codes.biscuit.skyblockaddons.gui.IslandWarpGui;
 import codes.biscuit.skyblockaddons.api.SkyblockAPI;
 import codes.biscuit.skyblockaddons.api.models.Pet;
 import codes.biscuit.skyblockaddons.constants.game.Rarity;
@@ -25,8 +30,6 @@ import net.minecraft.entity.item.EntityArmorStand;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.GuiIngameForge;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -49,7 +52,6 @@ public class RenderListener {
     private final static ItemStack BONE_ITEM = new ItemStack(Items.bone);
     private final static ResourceLocation BARS = new ResourceLocation("skyblockaddons", "bars.png");
     private final static ResourceLocation DEFENCE_VANILLA = new ResourceLocation("skyblockaddons", "defence.png");
-//    private final static ResourceLocation TEXT_ICONS = new ResourceLocation("skyblockaddons", "icons.png");
     private final static ResourceLocation IMPERIAL_BARS_FIX = new ResourceLocation("skyblockaddons", "imperialbarsfix.png");
     private final static ResourceLocation TICKER_SYMBOL = new ResourceLocation("skyblockaddons", "ticker.png");
 
@@ -61,33 +63,17 @@ public class RenderListener {
     private final static ResourceLocation ZEALOTS_PER_EYE_ICON = new ResourceLocation("skyblockaddons", "icons/zealotspereye.png");
     private final static ResourceLocation SLASH_ICON = new ResourceLocation("skyblockaddons", "icons/slash.png");
     private final static ResourceLocation IRON_GOLEM_ICON = new ResourceLocation("skyblockaddons", "icons/irongolem.png");
+    private final static ResourceLocation WARP_ICON = new ResourceLocation("skyblockaddons", "icons/warp.png");
 
     private final static ItemStack WATER_BUCKET = new ItemStack(Items.water_bucket);
     private final static ItemStack IRON_SWORD = new ItemStack(Items.iron_sword);
     private final static ItemStack NETHER_STAR = new ItemStack(Items.nether_star);
-    private final static ItemStack WARP_SKULL = new ItemStack(Items.skull, 1, 3);
-
-    static {
-        NBTTagCompound texture = new NBTTagCompound();
-        texture.setString("Value", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYzljODg4MWU0MjkxNWE5ZDI5YmI2MWExNmZiMjZkMDU5OTEzMjA0ZDI2NWRmNWI0MzliM2Q3OTJhY2Q1NiJ9fX0=");
-        NBTTagList textures = new NBTTagList();
-        textures.appendTag(texture);
-        NBTTagCompound properties = new NBTTagCompound();
-        properties.setTag("textures", textures);
-        NBTTagCompound skullOwner = new NBTTagCompound();
-        skullOwner.setString("Id", "9ae837fc-19da-3841-af06-7db55d51c815");
-        skullOwner.setTag("Properties", properties);
-        NBTTagCompound tag = new NBTTagCompound();
-        tag.setTag("SkullOwner", skullOwner);
-        WARP_SKULL.setTagCompound(tag);
-    }
 
     private SkyblockAddons main;
 
     @Getter @Setter private boolean predictHealth = false;
     @Getter @Setter private boolean predictMana = false;
 
-    @Getter private DownloadInfo downloadInfo;
     @Setter private boolean updateMessageDisplayed = false;
 
     private Feature subtitleFeature = null;
@@ -109,7 +95,6 @@ public class RenderListener {
 
     public RenderListener(SkyblockAddons main) {
         this.main = main;
-        downloadInfo = new DownloadInfo(main);
     }
 
     /**
@@ -258,13 +243,13 @@ public class RenderListener {
                 String text;
                 if (message == Message.MESSAGE_MINION_CANNOT_REACH) {
                     text = message.getMessage(cannotReachMobName);
-                } else if (subtitleFeature == Feature.NO_ARROWS_LEFT_ALERT && arrowsLeft != -1) {
+                } else if (message == Message.MESSAGE_NO_ARROWS_LEFT && arrowsLeft != -1) {
                     text = Message.MESSAGE_ONLY_FEW_ARROWS_LEFT.getMessage(Integer.toString(arrowsLeft));
                 } else {
                     text = message.getMessage();
                 }
                 ChromaManager.renderingText(subtitleFeature);
-                MinecraftReflection.FontRenderer.drawString(text, (float) (-MinecraftReflection.FontRenderer.getStringWidth(text) / 2), -23.0F,
+                MinecraftReflection.FontRenderer.drawString(text, -MinecraftReflection.FontRenderer.getStringWidth(text) / 2F, -23.0F,
                         main.getConfigValues().getColor(subtitleFeature).getRGB(), true);
                 ChromaManager.doneRenderingText();
             }
@@ -445,9 +430,9 @@ public class RenderListener {
      */
     private void drawUpdateMessage() {
         Updater updater = main.getUpdater();
-        String message = updater.getMessage();
+        String message = updater.getMessageToRender();
 
-        if (updater.hasUpdate() && message != null && !updateMessageDisplayed ) {
+        if (updater.hasUpdate() && message != null && !updateMessageDisplayed) {
             Minecraft mc = Minecraft.getMinecraft();
             String[] textList = main.getUtils().wrapSplitText(message, 36);
 
@@ -466,6 +451,8 @@ public class RenderListener {
             }
 
             main.getScheduler().schedule(Scheduler.CommandType.ERASE_UPDATE_MESSAGE, 10);
+
+            main.getUpdater().sendUpdateMessage();
         }
     }
 
@@ -532,7 +519,7 @@ public class RenderListener {
             }
 
             int maxTickers = (buttonLocation == null) ? main.getPlayerListener().getMaxTickers() : 4;
-            for (int tickers = 0; tickers < maxTickers; tickers++) { //main.getPlayerListener().getTickers()
+            for (int tickers = 0; tickers < maxTickers; tickers++) {
                 mc.getTextureManager().bindTexture(TICKER_SYMBOL);
                 GlStateManager.enableAlpha();
                 if (tickers < (buttonLocation == null ? main.getPlayerListener().getTickers() : 3)) {
@@ -708,7 +695,7 @@ public class RenderListener {
             int summoningEyeCount = main.getPersistentValues().getSummoningEyeCount();
 
             if (summoningEyeCount > 0) {
-                text = String.valueOf(main.getPersistentValues().getTotalKills() / main.getPersistentValues().getSummoningEyeCount());
+                text = String.valueOf(Math.round(main.getPersistentValues().getTotalKills() / (double)main.getPersistentValues().getSummoningEyeCount()));
             } else {
                 text = "0"; // Avoid zero division.
             }
@@ -830,6 +817,10 @@ public class RenderListener {
                 boxYOne -= 2;
             }
 
+            if (feature == Feature.ENDSTONE_PROTECTOR_DISPLAY) {
+                boxXTwo += 16+2+mc.fontRendererObj.getStringWidth(String.valueOf(EndstoneProtectorManager.getZealotCount()));
+            }
+
             if (feature == Feature.COMBAT_TIMER_DISPLAY) {
                 boxYTwo += 15;
             }
@@ -914,13 +905,12 @@ public class RenderListener {
             main.getUtils().drawTextWithStyle(menuTimeRemaining, iconX + totalWidth/2-menuTimeRemainingWidth - spacerBetweenBothItems/2, intY, color, textAlpha);
             ChromaManager.doneRenderingText();
 
-            mc.getRenderItem().renderItemIntoGUI(WARP_SKULL, iconX + totalWidth/2 + spacerBetweenBothItems/2, intY - 5);
+            GlStateManager.color(1,1,1,1);
+            mc.getTextureManager().bindTexture(WARP_ICON);
+            Gui.drawModalRectWithCustomSizedTexture(iconX + totalWidth/2 + spacerBetweenBothItems/2, intY - 3, 0, 0, 13, 13, 13, 13);
             ChromaManager.renderingText(feature);
-            main.getUtils().drawTextWithStyle(warpTimeRemaining, iconX + totalWidth/2 + spacerBetweenBothItems/2+16+spacerBetweenItemsAndText, intY, color, textAlpha);
+            main.getUtils().drawTextWithStyle(warpTimeRemaining, iconX + totalWidth/2 + spacerBetweenBothItems/2+13+spacerBetweenItemsAndText, intY, color, textAlpha);
             ChromaManager.doneRenderingText();
-
-            RenderHelper.disableStandardItemLighting();
-            GlStateManager.disableRescaleNormal();
         } else if (feature == Feature.ENDSTONE_PROTECTOR_DISPLAY) {
             mc.getTextureManager().bindTexture(IRON_GOLEM_ICON);
             Gui.drawModalRectWithCustomSizedTexture(intX - 18, intY - 5, 0, 0, 16, 16, 16, 16);
@@ -932,12 +922,8 @@ public class RenderListener {
 
             int count = EndstoneProtectorManager.getZealotCount();
 
-            if (buttonLocation != null && count == -1) {
-                count = EndstoneProtectorManager.Stage.STAGE_3.getZealotsRemaining();
-            }
-
             ChromaManager.renderingText(feature);
-            main.getUtils().drawTextWithStyle("< " + count, intX+16+2, intY, color, textAlpha);
+            main.getUtils().drawTextWithStyle(String.valueOf(count), intX+16+2, intY, color, textAlpha);
             ChromaManager.doneRenderingText();
         } else if(feature == Feature.PET_DISPLAY) {
             if(SkyblockAPI.getActiveProfile() != null) {
@@ -1167,9 +1153,9 @@ public class RenderListener {
     }
 
     public void drawPowerOrbStatus(Minecraft mc, float scale, ButtonLocation buttonLocation) {
-        PowerOrbManager.Entry activePowerOrb = PowerOrbManager.getInstance().get();
+        PowerOrbManager.PowerOrbEntry activePowerOrb = PowerOrbManager.getInstance().getActivePowerOrb();
         if (buttonLocation != null) {
-            activePowerOrb = PowerOrbManager.DUMMY_ENTRY;
+            activePowerOrb = PowerOrbManager.DUMMY_POWER_ORB_ENTRY;
         }
         if (activePowerOrb != null) {
             PowerOrb powerOrb = activePowerOrb.getPowerOrb();
@@ -1218,7 +1204,7 @@ public class RenderListener {
 
         GlStateManager.disableDepth();
         GlStateManager.enableBlend();
-        mc.getTextureManager().bindTexture(powerOrb.resourceLocation);
+        mc.getTextureManager().bindTexture(powerOrb.getResourceLocation());
         GlStateManager.color(1, 1, 1, 1F);
         Gui.drawModalRectWithCustomSizedTexture(intX, intY, 0, 0, iconSize, iconSize, iconSize, iconSize);
         GlStateManager.disableBlend();
@@ -1239,25 +1225,20 @@ public class RenderListener {
         float x = main.getConfigValues().getActualX(Feature.POWER_ORB_STATUS_DISPLAY);
         float y = main.getConfigValues().getActualY(Feature.POWER_ORB_STATUS_DISPLAY);
 
-        String secondsString = String.format("§e%ss", seconds);
-        int spacing = 1;
-        int iconSize = MinecraftReflection.FontRenderer.getFontHeight() * 3; // 3 because it looked the best
-        int iconAndSecondsHeight = iconSize + MinecraftReflection.FontRenderer.getFontHeight();
-
         int maxHealth = main.getUtils().getAttributes().get(Attribute.MAX_HEALTH).getValue();
-        double healthRegen = maxHealth * powerOrb.healthRegen;
-        double healIncrease = powerOrb.healIncrease * 100;
+        double healthRegen = maxHealth * powerOrb.getHealthRegen();
+        double healIncrease = powerOrb.getHealIncrease() * 100;
 
         List<String> display = new LinkedList<>();
         display.add(String.format("§c+%s ❤/s", TextUtils.formatDouble(healthRegen)));
-        if(powerOrb.manaRegen > 0) {
+        if(powerOrb.getManaRegen() > 0) {
             int maxMana = main.getUtils().getAttributes().get(Attribute.MAX_MANA).getValue();
             double manaRegen = maxMana / 50;
-            manaRegen = manaRegen + manaRegen * powerOrb.manaRegen;
+            manaRegen = manaRegen + manaRegen * powerOrb.getManaRegen();
             display.add(String.format("§b+%s ✎/s", TextUtils.formatDouble(manaRegen)));
         }
-        if (powerOrb.strength > 0) {
-            display.add(String.format("§4+%d ❁", powerOrb.strength));
+        if (powerOrb.getStrength() > 0) {
+            display.add(String.format("§4+%d ❁", powerOrb.getStrength()));
         }
         if (healIncrease > 0) {
             display.add(String.format("§2+%s%% Healing", TextUtils.formatDouble(healIncrease)));
@@ -1265,7 +1246,11 @@ public class RenderListener {
 
         Optional<String> longestLine = display.stream().max(Comparator.comparingInt(String::length));
 
-        int effectsHeight = (MinecraftReflection.FontRenderer.getFontHeight() + spacing) * display.size();
+        int spacingBetweenLines = 1;
+        int iconSize = MinecraftReflection.FontRenderer.getFontHeight() * 3; // 3 because it looked the best
+        int iconAndSecondsHeight = iconSize + MinecraftReflection.FontRenderer.getFontHeight();
+
+        int effectsHeight = (MinecraftReflection.FontRenderer.getFontHeight() + spacingBetweenLines) * display.size();
         int width = iconSize + longestLine.map(MinecraftReflection.FontRenderer::getStringWidth)
                 .orElseGet(() -> MinecraftReflection.FontRenderer.getStringWidth(display.get(0)));
         int height = Math.max(effectsHeight, iconAndSecondsHeight);
@@ -1287,17 +1272,18 @@ public class RenderListener {
 
         GlStateManager.disableDepth();
         GlStateManager.enableBlend();
-        mc.getTextureManager().bindTexture(powerOrb.resourceLocation);
+        mc.getTextureManager().bindTexture(powerOrb.getResourceLocation());
         GlStateManager.color(1, 1, 1, 1F);
         Gui.drawModalRectWithCustomSizedTexture(intX, intY, 0, 0, iconSize, iconSize, iconSize, iconSize);
         GlStateManager.disableBlend();
         GlStateManager.enableDepth();
 
+        String secondsString = String.format("§e%ss", seconds);
         main.getUtils().drawTextWithStyle(secondsString, intX + (iconSize / 2) - (MinecraftReflection.FontRenderer.getStringWidth(secondsString) / 2), intY + iconSize, ChatFormatting.WHITE.getColor(255).getRGB());
 
         int startY = Math.round(intY + (iconAndSecondsHeight / 2f) - (effectsHeight / 2f));
         for (int i = 0; i < display.size(); i++) {
-            main.getUtils().drawTextWithStyle(display.get(i), intX + iconSize + 3, startY + (i * (MinecraftReflection.FontRenderer.getFontHeight() + spacing)), ChatFormatting.WHITE.getColor(255).getRGB());
+            main.getUtils().drawTextWithStyle(display.get(i), intX + iconSize + 3, startY + (i * (MinecraftReflection.FontRenderer.getFontHeight() + spacingBetweenLines)), ChatFormatting.WHITE.getColor(255).getRGB());
         }
     }
 
@@ -1341,8 +1327,15 @@ public class RenderListener {
             Minecraft.getMinecraft().displayGuiScreen(new LocationEditGui(main, guiPageToOpen, guiTabToOpen));
         } else if (guiToOpen == EnumUtils.GUIType.SETTINGS) {
             Minecraft.getMinecraft().displayGuiScreen(new SettingsGui(main, guiFeatureToOpen, 1, guiPageToOpen, guiTabToOpen, guiFeatureToOpen.getSettings()));
+        } else if (guiToOpen == EnumUtils.GUIType.WARP) {
+            Minecraft.getMinecraft().displayGuiScreen(new IslandWarpGui());
         }
         guiToOpen = null;
+    }
+
+
+    public void setGuiToOpen(EnumUtils.GUIType guiToOpen) {
+        this.guiToOpen = guiToOpen;
     }
 
     public void setGuiToOpen(EnumUtils.GUIType guiToOpen, int page, EnumUtils.GuiTab tab) {
@@ -1357,9 +1350,6 @@ public class RenderListener {
     }
 
     public void setSubtitleFeature(Feature subtitleFeature) {
-        this.subtitleFeature = subtitleFeature;
-        if (subtitleFeature == null) {
-            this.arrowsLeft = -1;
-        }
+        this.subtitleFeature = subtitleFeature; // TODO: check, does this break anything? (arrow)
     }
 }

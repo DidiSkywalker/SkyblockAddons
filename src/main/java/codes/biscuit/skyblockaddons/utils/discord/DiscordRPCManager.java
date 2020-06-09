@@ -1,8 +1,8 @@
 package codes.biscuit.skyblockaddons.utils.discord;
 
 import codes.biscuit.skyblockaddons.SkyblockAddons;
-import codes.biscuit.skyblockaddons.utils.Location;
-import codes.biscuit.skyblockaddons.utils.SkyblockDate;
+import codes.biscuit.skyblockaddons.core.Location;
+import codes.biscuit.skyblockaddons.core.SkyblockDate;
 import com.google.gson.JsonObject;
 import com.jagrosh.discordipc.IPCClient;
 import com.jagrosh.discordipc.IPCListener;
@@ -52,6 +52,7 @@ public class DiscordRPCManager implements IPCListener {
     public void stop() {
         if (isActive()) {
             client.close();
+            connected = false;
         }
     }
 
