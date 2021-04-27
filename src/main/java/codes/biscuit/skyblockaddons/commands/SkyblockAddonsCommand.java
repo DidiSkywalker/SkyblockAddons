@@ -1,6 +1,7 @@
 package codes.biscuit.skyblockaddons.commands;
 
 import codes.biscuit.skyblockaddons.SkyblockAddons;
+import codes.biscuit.skyblockaddons.api.SkyblockAPI;
 import codes.biscuit.skyblockaddons.utils.EnumUtils;
 import codes.biscuit.skyblockaddons.utils.dev.DevUtils;
 import codes.biscuit.skyblockaddons.utils.nifty.ChatFormatting;
@@ -151,6 +152,13 @@ public class SkyblockAddonsCommand extends CommandBase {
                 }
             }  else if (args[0].equalsIgnoreCase("warp")) {
                 main.getRenderListener().setGuiToOpen(EnumUtils.GUIType.WARP);
+            } else if(args[0].equalsIgnoreCase("update-api")) {
+                try {
+                    SkyblockAPI.fetch();
+                    main.getUtils().sendMessage("§aAPI updated successfully.");
+                } catch (IOException e) {
+                    main.getUtils().sendMessage("§cFailed to update API: "+e.getMessage());
+                }
             } else if (main.isDevMode()) {
                 if (args[0].equalsIgnoreCase("sidebar")) {
                     Scoreboard scoreboard = Minecraft.getMinecraft().theWorld.getScoreboard();

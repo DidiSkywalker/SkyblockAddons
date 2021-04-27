@@ -91,29 +91,31 @@ public class Pet {
 
     public void addExp(final EnumUtils.SkillType skillType, final double exp) {
         final int tamingLevel = SkyblockAPI.getActiveProfile().getLocalMember().getSkillLevel(TAMING);
-        double modifier;
+        double skillTypeModifier;
         if(skillType == type.getSkillType()) {
-            modifier = 1;
+            skillTypeModifier = 1;
         } else {
             if(skillType == ALCHEMY) {
-                modifier = 1d/12d;
+                skillTypeModifier = 1d/12d;
             } else {
-                modifier = 0.25;
+                skillTypeModifier = 0.25;
             }
         }
 
-        modifier += tamingLevel * 0.01;
+        double tamingModifier = 1 + (tamingLevel * 0.01);
+        double itemModifier = 1;
         try {
             SkillBoostItem skillBoostItem = SkillBoostItem.valueOf(item);
             if(skillBoostItem.skillType == skillType) {
-                modifier += skillBoostItem.expBoost;
+                itemModifier = 1 + skillBoostItem.expBoost;
                 FMLLog.info("Skill Boost Item: %f%%", skillBoostItem.expBoost*100);
             }
         } catch (IllegalArgumentException ignored) { }
 
-        final double effectiveExp = exp * modifier;
+        final double totalModifier = skillTypeModifier * tamingModifier * itemModifier;
+        final double effectiveExp = exp * (Math.round(totalModifier * 100.0) / 100.0);
 
-        FMLLog.info("Earned %f pet exp from %f %s exp (%f modifier)", effectiveExp, exp, skillType.name(), modifier);
+        FMLLog.info("Earned %f pet exp from %f %s exp (%f modifier)", effectiveExp, exp, skillType.name(), totalModifier);
         FMLLog.info("PET: %f -> %f (+%f)", this.exp, this.exp+effectiveExp, effectiveExp);
         this.exp += effectiveExp;
     }

@@ -1,24 +1,18 @@
 package codes.biscuit.skyblockaddons.api.models;
 
+import codes.biscuit.skyblockaddons.api.SkyblockAPI;
 import com.google.gson.annotations.SerializedName;
 import lombok.Getter;
-import lombok.Setter;
 
+/**
+ * Represents how a profile is listed in short form for the {@link SkyblockAPI#getProfileList(String)} request.
+ */
+@Getter @SuppressWarnings("unused")
 public class SmallProfile {
-
-    @Getter @Setter @SerializedName("profile_id")
-    private String profileId;
-    @Getter @Setter @SerializedName("cute_name")
+    @SerializedName("cute_name")
     private String cuteName;
-    @Getter @Setter @SerializedName("first_join")
+    @SerializedName("first_join")
     private long firstJoin;
-    @Getter @Setter @SerializedName("last_save")
+    @SerializedName("last_save")
     private long lastSave;
-
-    public SmallProfile(String profileId, String cuteName, long firstJoin, long lastSave) {
-        this.profileId = profileId;
-        this.cuteName = cuteName;
-        this.firstJoin = firstJoin;
-        this.lastSave = lastSave;
-    }
 }

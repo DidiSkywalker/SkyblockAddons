@@ -44,6 +44,9 @@ dependencies {
     implementation('com.github.BiscuitDevelopment:DiscordIPC:139c9d6') {
         exclude module: 'gson'
     }
+
+    // https://mvnrepository.com/artifact/org.jetbrains/annotations
+    implementation group: 'org.jetbrains', name: 'annotations', version: '15.0'
 }
 
 jar {

@@ -1,9 +1,9 @@
 package codes.biscuit.skyblockaddons.utils;
 
 import codes.biscuit.skyblockaddons.SkyblockAddons;
+import codes.biscuit.skyblockaddons.api.models.SkillUpdate;
 import codes.biscuit.skyblockaddons.core.Attribute;
 import codes.biscuit.skyblockaddons.core.Feature;
-import codes.biscuit.skyblockaddons.api.SkyblockAPI;
 import codes.biscuit.skyblockaddons.utils.nifty.StringUtil;
 import lombok.Getter;
 import lombok.Setter;
@@ -224,12 +224,21 @@ public class ActionBarParser {
         // §3+10.9 Combat (313,937.1/600,000)
         // Another Example: §5+§d30 §5Runecrafting (969/1000)
         Matcher matcher = COLLECTIONS_CHAT_PATTERN.matcher(skillSection);
+        // TODO move feature check to drawing
         if (matcher.matches() && main.getConfigValues().isEnabled(Feature.SKILL_DISPLAY)) {
+            double increase = Double.parseDouble(matcher.group(1));
             EnumUtils.SkillType skillType = EnumUtils.SkillType.getFromString(matcher.group(2));
+            double currentProgress = Double.parseDouble(matcher.group(3));
+            double maxProgress = Double.parseDouble(matcher.group(4));
+            SkillUpdate skillUpdate = new SkillUpdate(skillType, currentProgress, maxProgress, increase);
+
+            SkyblockAddons.getInstance().getSkyblockPlayer().setLastSkillUpdate(skillUpdate);
+
+
             String newExpStr = matcher.group(3).split("/")[0].substring(1).replace(",", "");
             double newExp = Double.parseDouble(newExpStr);
             double added = Double.parseDouble(matcher.group(1).replace(",", ""));
-            SkyblockAPI.getActiveProfile().getLocalMember().onSkillExp(skillType, added, newExp);
+//            SkyblockAPI.getActiveProfile().getLocalMember().onSkillExp(skillType, added, newExp);
             main.getRenderListener().setSkillText("+" + matcher.group(1) + " " + matcher.group(3));
             main.getRenderListener().setSkill(EnumUtils.SkillType.getFromString(matcher.group(2)));
             main.getRenderListener().setSkillFadeOutTime(System.currentTimeMillis() + 4000);

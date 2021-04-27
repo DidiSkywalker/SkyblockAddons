@@ -1,6 +1,7 @@
 package codes.biscuit.skyblockaddons;
 
 import codes.biscuit.skyblockaddons.api.SkyblockAPI;
+import codes.biscuit.skyblockaddons.api.SkyblockPlayer;
 import codes.biscuit.skyblockaddons.commands.SkyblockAddonsCommand;
 import codes.biscuit.skyblockaddons.core.Feature;
 import codes.biscuit.skyblockaddons.core.Message;
@@ -67,6 +68,8 @@ public class SkyblockAddons {
     private NewScheduler newScheduler = new NewScheduler();
     private boolean usingLabymod = false;
     private boolean usingOofModv1 = false;
+
+    private final SkyblockPlayer skyblockPlayer = new SkyblockPlayer();
 
     /** Whether developer mode is enabled. */
     @Setter private boolean devMode = false;
@@ -194,11 +197,11 @@ public class SkyblockAddons {
             public void run() {
                 try {
                     FMLLog.info("Running API update");
-                    SkyblockAPI.update();
+                    SkyblockAPI.fetch();
                 } catch (IOException e) {
                     e.printStackTrace();
                     FMLLog.severe("Failed to update API: %s", e.getMessage());
-                    startApiUpdates(20000);
+                    startApiUpdates(60000);
                 }
             }
         }, delay);
